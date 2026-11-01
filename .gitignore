@@ -1,14 +1,34 @@
-# Dataset folders
+﻿# Datasets and archives (too large for version control)
+image data/
+image_data/
+leaf-disease-dataset-combination/
 leaf_dataset/
 dataset/
 data/
-
-# Kaggle downloads
+augmented_output/
 *.zip
+*.tar.gz
+*.tgz
 
-# Python cache
+# User profile artifacts
+%USERPROFILE%/
+
+# Python cache & virtual environments
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Jupyter
 .ipynb_checkpoints/
-# Dataset files
-*.zip
-image data/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

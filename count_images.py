@@ -1,18 +1,37 @@
+﻿"""
+LeafCare AI - Dataset Analysis and Visualization Module
+Analyzes image dimensions and displays sample disease images across train/test/validation splits.
+"""
+
 import os
 import random
 from PIL import Image
 import matplotlib.pyplot as plt
 
-# 🔹 Main dataset folder
-DATASET_PATH = r"C:\Users\Shagun\OneDrive\Desktop\leaf disease project\image data"
+# Base directory of the repository
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Main dataset folder: check environment variable, default path, or relative folder
+DEFAULT_CANDIDATES = [
+    os.getenv("LEAF_DATASET_PATH", ""),
+    os.path.join(BASE_DIR, "image data"),
+    os.path.join(BASE_DIR, "leaf-disease-dataset-combination"),
+    r"C:\Users\Shagun\OneDrive\Desktop\leaf disease project\image data"
+]
+
+DATASET_PATH = next((p for p in DEFAULT_CANDIDATES if p and os.path.isdir(p)), os.path.join(BASE_DIR, "image data"))
 
 folders = ["train", "test", "validation"]
 
-# ----------------------------------
-# Function to analyze image sizes
-# ----------------------------------
+
 def analyze_folder(folder_path):
+    """
+    Scans a dataset directory, counting valid images and computing
+    minimum, maximum, and average image resolutions.
+
+    Args:
+        folder_path (str): Path to folder containing image files/subdirectories.
+    """
     sizes = []
 
     for root, dirs, files in os.walk(folder_path):
@@ -22,7 +41,7 @@ def analyze_folder(folder_path):
                 try:
                     with Image.open(img_path) as img:
                         sizes.append(img.size)
-                except:
+                except Exception:
                     continue
 
     if sizes:
@@ -31,7 +50,7 @@ def analyze_folder(folder_path):
         avg_width = sum([s[0] for s in sizes]) / len(sizes)
         avg_height = sum([s[1] for s in sizes]) / len(sizes)
 
-        print(f"\n📂 {folder_path}")
+        print(f"\n[Folder] {folder_path}")
         print(f"Total Images: {len(sizes)}")
         print(f"Minimum Size: {min_size}")
         print(f"Maximum Size: {max_size}")
@@ -40,10 +59,14 @@ def analyze_folder(folder_path):
         print(f"No images found in {folder_path}")
 
 
-# ----------------------------------
-# Function to show 9 random images
-# ----------------------------------
 def show_random_images(folder_path):
+    """
+    Samples and plots a 3x3 grid of 9 random leaf images from a split folder,
+    annotating each image with its parent folder disease class label.
+
+    Args:
+        folder_path (str): Path to folder containing class-separated images.
+    """
     all_images = []
 
     for root, dirs, files in os.walk(folder_path):
@@ -51,7 +74,12 @@ def show_random_images(folder_path):
             if file.lower().endswith((".jpg", ".jpeg", ".png")):
                 all_images.append(os.path.join(root, file))
 
-    random_images = random.sample(all_images, min(9, len(all_images)))
+    if not all_images:
+        print(f"No images available to display from {folder_path}")
+        return
+
+    sample_size = min(9, len(all_images))
+    random_images = random.sample(all_images, sample_size)
 
     plt.figure(figsize=(10, 10))
 
@@ -59,20 +87,24 @@ def show_random_images(folder_path):
         img = Image.open(img_path)
         disease = os.path.basename(os.path.dirname(img_path))
 
-        plt.subplot(3, 3, i+1)
+        plt.subplot(3, 3, i + 1)
         plt.imshow(img)
-        plt.title(disease)
+        plt.title(disease, fontsize=9)
         plt.axis("off")
 
     plt.tight_layout()
     plt.show()
 
 
-# ----------------------------------
-# Run Analysis
-# ----------------------------------
-for folder in folders:
-    analyze_folder(os.path.join(DATASET_PATH, folder))
+if __name__ == "__main__":
+    print(f"LeafCare AI - Scanning dataset at: {DATASET_PATH}")
+    for folder in folders:
+        target_split = os.path.join(DATASET_PATH, folder)
+        if os.path.isdir(target_split):
+            analyze_folder(target_split)
+        else:
+            print(f"Split directory not found: {target_split}")
 
-# Show 9 random images from train
-show_random_images(os.path.join(DATASET_PATH, "train"))
+    train_path = os.path.join(DATASET_PATH, "train")
+    if os.path.isdir(train_path):
+        show_random_images(train_path)
